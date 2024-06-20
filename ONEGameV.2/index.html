@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Inter:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <title>JS Game</title>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="container__contenido">
+            <div class="container__informaciones">
+                <div class="container__texto">
+                    <h1>Juego del número secreto</h1>
+                    <p class="texto__parrafo" id="resp">Indica un número del 1 al 10</p>
+                </div>
+                <input type="number" id="input1" min="1" max="10" class="container__input">
+                <div class="chute container__botones">
+                    <button class="container__boton" id="intentar">Intentar</button>
+                    <button class="container__boton" id="reiniciar" disabled>Nuevo juego</button>
+                </div>
+            </div>
+            <img src="./img/ia.png" alt="Una persona mirando a la izquierda" class="container__imagen-persona" />
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+        (() => {
+                const App = {
+                      htmlElements: {
+                          resp: document.getElementById('resp'),
+                          input: document.getElementById('input1'),
+                          tryButton: document.getElementById('intentar'),
+                          restartButton: document.getElementById('reiniciar'),
+                      },
+                      init() {
+                          this.bindEvents();
+                      },
+                      bindEvents() {
+                        
+                          this.htmlElements.tryButton.addEventListener('click', this.handlers.onTryButtonClick);
+                          this.htmlElements.restartButton.addEventListener('click', this.handlers.onRestartButtonClick);  
+                      },
+                      handlers: {
+                          onFormSubmit(event) {
+                              event.preventDefault();
+                          },
+                          onTryButtonClick() {
+                              if(sessionStorage.getItem('intentos') == null){
+                                  sessionStorage.setItem('intentos', 1);
+                              } 
+                              else {
+                                  let intentos = parseInt(sessionStorage.getItem('intentos'));
+                                  intentos++;
+                                  sessionStorage.setItem('intentos', intentos);
+                              }
+                              if(sessionStorage.getItem('randomNumber') == null){
+                                  randomNumber = App.methods.getRandomNumber(10);
+                                  if(sessionStorage.getItem('lastNumberPlayer') == randomNumber){
+                                      randomNumber = App.methods.getRandomNumber(10);
+                                      sessionStorage.removeItem('lastNumberPlayer');
+                                  }
+                                  sessionStorage.setItem('randomNumber', randomNumber);
+                                  sessionStorage.setItem('lastNumberPlayer', randomNumber);
+                              } else {
+                                  randomNumber = sessionStorage.getItem('randomNumber');
+                              }
+                              
+                              console.log(randomNumber);
+                              let number = App.htmlElements.input.value;
+                              if (number == randomNumber) {
+                                  App.methods.showSuccessMessage();
+                              } else if(number > randomNumber){
+                                  App.methods.changeHTMLContent(App.htmlElements.resp, 'El número secreto es menor');
+                                  
+                              } else if(number < randomNumber){
+                                  App.methods.changeHTMLContent(App.htmlElements.resp, 'El número secreto es mayor');
+                              }
+                              else if (sessionStorage.getItem('intentos') == 3){
+                                  App.methods.showErrorMessage();
+                              }
+                              else if (number < 1 || number > 10) {
+                                  alert('El número debe estar entre 1 y 10');
+                                  App.methods.changeHTMLContent(App.htmlElements.resp, 'El número debe estar entre 1 y 10');
+                                  return;
+                              }
+                              else if (number == '') {
+                                  App.methods.changeHTMLContent(App.htmlElements.resp, 'Por favor, introduce un número');
+                                  return;
+                              }
+                              App.htmlElements.input.value = '';
+                          },
+                          onRestartButtonClick() {
+                              App.htmlElements.restartButton.disabled = true;
+                              App.htmlElements.tryButton.disabled = false;
+                              App.methods.changeHTMLContent(App.htmlElements.resp, 'Indica un número del 1 al 10');
+                              sessionStorage.removeItem('randomNumber');
+                              sessionStorage.removeItem('intentos');
+                          },
+                      },
+                      methods: {
+                        showSuccessMessage() {
+                            App.methods.changeHTMLContent(App.htmlElements.resp, '¡Felicidades! Has acertado el número secreto');
+                            App.htmlElements.restartButton.disabled = false;
+                            App.htmlElements.tryButton.disabled = true;
+                        },
+                        showErrorMessage() {
+                            App.methods.changeHTMLContent(App.htmlElements.resp, '¡Lo siento! No has acertado el número secreto');
+                            App.htmlElements.restartButton.disabled = false;
+                            App.htmlElements.tryButton.disabled = true;
+                        },
+                        changeHTMLContent(element, content) {
+                            element.innerHTML = content;
+                        },
+                        getRandomNumber(max){
+                            return Math.floor(Math.random() * max) + 1;
+                        }
+                      },
+                  };
+                  App.init();
+                })();
+            });
+    </script>
+</body>
+
+</html>
